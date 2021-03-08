@@ -4,6 +4,7 @@
 
 ;; Author: Olav Fosse <fosseolav@gmail.com>
 ;; Version: 0.1
+;; Package-Version: 20201031.2036
 ;; URL: https://github.com/olav35/eradio
 ;; Package-Requires: ((emacs "24.1"))
 
@@ -50,7 +51,11 @@ This is a list of the program and its arguments.  The url will be appended to th
 		 ("mpv" "--no-video" "--no-terminal" ,(concat "--input-ipc-server=" eradio-mpv-socket))))
   :group 'eradio)
 
+(defcustom eradio-log-path "~/songs.org"
+  "Where to log song names.")
+
 (defvar eradio-process nil "The process running the radio player.")
+(defvar eradio-current-channel nil "The currently playing (or paused) channel.")
 
 (defun eradio-alist-keys (alist)
   "Get the keys from an ALIST."
@@ -64,12 +69,14 @@ This is a list of the program and its arguments.  The url will be appended to th
       (delete-process eradio-process)
       (setq eradio-process nil))))
 
+;;;###autoload
 (defun eradio-toggle ()
   "Toggle the radio player."
   (interactive)
   (if eradio-process
       (eradio-stop)
-    (eradio-play)))
+    ;; If eradio-current-channel is nil, eradio-play will prompt the url
+    (eradio-play eradio-current-channel)))
 
 (defun eradio-play-low-level (url)
   "Play radio channel URL in a new process."
@@ -99,12 +106,32 @@ This is a list of the program and its arguments.  The url will be appended to th
   (message (eradio-get-song-title)))
 
 ;;;###autoload
-(defun eradio-play ()
+(defun eradio-play (&optional url)
   "Play a radio channel, do what I mean."
   (interactive)
   (eradio-stop)
-  (let ((url (eradio-get-url)))
+  (let ((url (or url (eradio-get-url))))
+    (setq eradio-current-channel url)
     (eradio-play-low-level url)))
+
+(defun eradio-kill-song-title ()
+    (interactive)
+    (let ((song-title (eradio-get-song-title)))
+      (kill-new song-title)
+      (message song-title)))
+
+(defun eradio-log-song-title ()
+  (interactive)
+  (let ((song-title (eradio-get-song-title)))
+    (shell-command-to-string (format "echo '* %s' >> %s" song-title eradio-log-path))
+    (message song-title)))
+
+(defun eradio-random-channel ()
+  (interactive)
+  (let ((channel-pair (nth (random (length eradio-channels)) eradio-channels)))
+    (eradio-stop)
+    (eradio-play-low-level (cdr channel-pair))
+    (message "Playing channel: %s" (car channel-pair))))
 
 (provide 'eradio)
 ;;; eradio.el ends here
