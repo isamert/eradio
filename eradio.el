@@ -43,12 +43,12 @@ This is required for `eradio-{get,show}-song-title` functions to work properly. 
   "Eradio's player.
 This is a list of the program and its arguments.  The url will be appended to the list to generate the full command."
   :type `(choice
-	  (const :tag "vlc"
-		 ("vlc" "--no-video" "-I" "rc"))
-	  (const :tag "vlc-mac"
-		 ("/Applications/VLC.app/Contents/MacOS/VLC" "--no-video" "-I" "rc"))
-	  (const :tag "mpv"
-		 ("mpv" "--no-video" "--no-terminal" ,(concat "--input-ipc-server=" eradio-mpv-socket))))
+          (const :tag "vlc"
+                 ("vlc" "--no-video" "-I" "rc"))
+          (const :tag "vlc-mac"
+                 ("/Applications/VLC.app/Contents/MacOS/VLC" "--no-video" "-I" "rc"))
+          (const :tag "mpv"
+                 ("mpv" "--no-video" "--no-terminal" ,(concat "--input-ipc-server=" eradio-mpv-socket))))
   :group 'eradio)
 
 (defcustom eradio-log-path "~/songs.org"
@@ -69,6 +69,20 @@ This is a list of the program and its arguments.  The url will be appended to th
       (delete-process eradio-process)
       (setq eradio-process nil))))
 
+(defun eradio-play-low-level (url)
+  "Play radio channel URL in a new process."
+  (setq eradio-process
+        (apply #'start-process
+               `("eradio-process" nil ,@eradio-player ,url))))
+
+(defun eradio-get-url ()
+  "Get a radio channel URL from the user."
+  (let ((eradio-channel (completing-read
+                         "Channel: "
+                         (eradio-alist-keys eradio-channels)
+                         nil nil)))
+    (or (cdr (assoc eradio-channel eradio-channels)) eradio-channel)))
+
 ;;;###autoload
 (defun eradio-toggle ()
   "Toggle the radio player."
@@ -78,20 +92,7 @@ This is a list of the program and its arguments.  The url will be appended to th
     ;; If eradio-current-channel is nil, eradio-play will prompt the url
     (eradio-play eradio-current-channel)))
 
-(defun eradio-play-low-level (url)
-  "Play radio channel URL in a new process."
-  (setq eradio-process
-	(apply #'start-process
-	       `("eradio-process" nil ,@eradio-player ,url))))
-
-(defun eradio-get-url ()
-  "Get a radio channel URL from the user."
-  (let ((eradio-channel (completing-read
-                       "Channel: "
-                       (eradio-alist-keys eradio-channels)
-                       nil nil)))
-  (or (cdr (assoc eradio-channel eradio-channels)) eradio-channel)))
-
+;;;###autoload
 (defun eradio-get-song-title ()
   "Return currently playing songs title."
   (let* ((socket-command "{ \"command\": [\"get_property\", \"filtered-metadata\"] }")
@@ -100,6 +101,7 @@ This is a list of the program and its arguments.  The url will be appended to th
          (json (json-read-from-string command-output)))
     (cdr (assoc 'icy-title (assoc 'data json)))))
 
+;;;###autoload
 (defun eradio-show-song-title ()
   "Show currently playing songs title."
   (interactive)
@@ -114,18 +116,21 @@ This is a list of the program and its arguments.  The url will be appended to th
     (setq eradio-current-channel url)
     (eradio-play-low-level url)))
 
+;;;###autoload
 (defun eradio-kill-song-title ()
-    (interactive)
-    (let ((song-title (eradio-get-song-title)))
-      (kill-new song-title)
-      (message song-title)))
+  (interactive)
+  (let ((song-title (eradio-get-song-title)))
+    (kill-new song-title)
+    (message song-title)))
 
+;;;###autoload
 (defun eradio-log-song-title ()
   (interactive)
   (let ((song-title (eradio-get-song-title)))
     (shell-command-to-string (format "echo '* %s' >> %s" song-title eradio-log-path))
     (message song-title)))
 
+;;;###autoload
 (defun eradio-random-channel ()
   (interactive)
   (let ((channel-pair (nth (random (length eradio-channels)) eradio-channels)))
