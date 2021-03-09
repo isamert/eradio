@@ -1,63 +1,7 @@
-[[https://melpa.org/#/eradio][file:https://melpa.org/packages/eradio-badge.svg]]
+* eradio
+This is just like [[https://github.com/fossegrim/eradio][fossegrim/eradio]] but I added some (half-baked) features that I use, like:
+- A function that plays a random radio
+- A way to get currently playing song name (only works with mpv)
+- Some commands to show/log song names in emacs/file
 
-** Synopsis
-eradio is a simple Internet radio player for Emacs.
-
-The public interface consists of two functions, =eradio-play= and =eradio-stop=, as well as two variables =eradio-channels= and =eradio-player=. =eradio-play= prompts you for a radio channel to play and =eradio-stop= stops the radio player. The =eradio-channels= variable is an alist of radio channel names and their URLs and =eradio-player= is a list of the media player and its arguments.
-
-** [[https://github.com/olav35/eradio/blob/master/demonstration.mp4?raw=true][Demonstration]]
-
-** Installation
-The package is available in the Melpa repository.
-
-*** Doom
-#+begin_src lisp
-;; ~/.doom.d/packages.el
-(package! eradio)
-#+end_src
-
-*** use-package
-#+begin_src lisp
-;; ~/.emacs.d/init.el
-(use-package eradio
-  :ensure t)
-#+end_src
-
-** Media player
-eradio requires an external media player such as VLC or mpv. The command to be used is determined by the =eradio-player= variable. The head of =eradio-player= is the program and the tail is the arguments. The default command uses VLC from the =exec-path= variable(which may differ from =$PATH=), but it can be customized to use mpv, VLC.app or alternatively set to use something else entirely.
-
-To use VLC.app, customize =eradio-player= to =vlc-mac= or set it to =("/Applications/VLC.app/Contents/MacOS/VLC" "--no-video" "-I" "rc")=. To use mpv, customize =eradio-player= to =mpv= or set it to ~("mpv" "--no-video" "--no-terminal" "--input-ipc-server=/tmp/eradio-socket")~
-
-Currently =eradio-{get,show}-song-title= functions only works with =mpv=. Also [[https://linux.die.net/man/1/socat][socat]] is required for these functions to work. Install it through your package manager.
-
-** Keybindings
-eradio does not bind any keys by default. Therefore you should bind them yourself. The following snippets are just suggestions. You can of course use any keybindings you would like.
-
-*** Doom
-#+begin_src lisp
-;; ~/.doom.d/config.el
-(map! :leader (:prefix ("r" . "eradio") :desc "Play a radio channel" "p" 'eradio-play))
-(map! :leader (:prefix ("r" . "eradio") :desc "Stop the radio player" "s" 'eradio-stop))
-#+end_src
-
-*** Vanilla
-#+begin_src lisp
-;; ~/.emacs.d/init.el
-(global-set-key (kbd "C-c r p") 'eradio-play)
-(global-set-key (kbd "C-c r s") 'eradio-stop)
-#+end_src
-
-** Radio channels
-eradio comes without any radio channels by default, but here are some of my favorites.
-#+begin_src lisp
-;; ~/.doom.d/config.el or ~/.emacs.d/init.el
-(setq eradio-channels '(("def con - soma fm" . "https://somafm.com/defcon256.pls")          ;; electronica with defcon-speaker bumpers
-                        ("metal - soma fm"   . "https://somafm.com/metal130.pls")           ;; \m/
-                        ("cyberia - lainon"  . "https://lainon.life/radio/cyberia.ogg.m3u") ;; cyberpunk-esque electronica
-                        ("cafe - lainon"     . "https://lainon.life/radio/cafe.ogg.m3u")))  ;; boring ambient, but with lain
-#+end_src
-
-If you are looking for more channels I encourage you to check out the SomaFM [[https://somafm.com/][catalog]]. They have a lot of good channels of all genres and aesthetics. Needless to say I am not associated with SomaFM.
-
-** Troubleshooting
-Some VLC ports are incapable of playing Internet radio. This seems to be the case with [[https://cvsweb.openbsd.org/cgi-bin/cvsweb/ports/x11/vlc/][OpenBSD's port]]. To verify that your vlc installation works run =vlc --no-video -I rc <radio-channel>= for example =vlc --no-video -I rc https://somafm.com/defcon256.pls=. Be aware that it might take some seconds before the audio starts. That is expected. A possible solution to this problem is to instead use mpv, which works as expected on OpenBSD too.
+See [[https://github.com/isamert/dotfiles/blob/master/.emacs.d/settings.org#eradio][my emacs configuration for eradio]] more info.
