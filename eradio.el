@@ -135,7 +135,7 @@ This is a list of the program and its arguments.  The url will be appended to th
   (interactive)
   (let ((channel-pair (nth (random (length eradio-channels)) eradio-channels)))
     (eradio-stop)
-    (eradio-play-low-level (cdr channel-pair))
+    (eradio-play (cdr channel-pair))
     (message "Playing channel: %s" (car channel-pair))))
 
 (provide 'eradio)
